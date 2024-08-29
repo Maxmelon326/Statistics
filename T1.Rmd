@@ -1,0 +1,111 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+install.packages('tinytex')
+tinytex::install_tinytex()
+
+#Q1 Define and print sting.
+
+# Define the string
+task_description <- "Name: LI WAN, Unit Name: SIT741, Task Name: T01.P1"
+
+# Print the string
+cat(task_description, "\n")
+
+
+```
+
+```{r}
+#Q2&Q3 Find a dataset, import and print head
+# Read the data into R
+bank_data <- read.csv("E:/2-学习/1-Deakin/24-T2/SIT741/bank-additional-full.csv", sep = ";")
+
+# View the first few rows of the dataset
+head(bank_data)
+
+#Source:https://archive.ics.uci.edu/dataset/222/bank+marketing
+
+```
+
+```{R}
+#Q4
+# Check the dimensions of the dataset (number of rows and columns)
+dataset_dimensions <- dim(bank_data)
+
+# Extract the number of observations (rows) and variables (columns)
+num_observations <- dataset_dimensions[1]
+num_variables <- dataset_dimensions[2]
+
+# Print the results
+cat("Number of observations (rows):", num_observations, "\n")
+cat("Number of variables (columns):", num_variables, "\n")
+
+```
+```{r}
+#Q5
+# Check the structure of bank_data
+str(bank_data)
+
+```
+```{r}
+#Q6
+summarize_variables <- function(data) {
+  # Ensure the input is either a list or a data frame
+  if (!is.data.frame(data) && !is.list(data)) {
+    stop("Input must be a data frame or a list.")
+  }
+  
+  # Loop through each variable in the data
+  for (var in names(data)) {
+    cat("Variable:", var, "\n")
+    
+    # Check if the variable is categorical (factor or character)
+    if (is.factor(data[[var]]) || is.character(data[[var]])) {
+      cat("Categorical Variable Summary:\n")
+      print(table(data[[var]]))
+      
+    # Check if the variable is numerical
+    } else if (is.numeric(data[[var]])) {
+      cat("Numerical Variable Summary:\n")
+      mean_value <- mean(data[[var]], na.rm = TRUE)
+      cat("Mean:", mean_value, "\n")
+      
+    # Handle other variable types
+    } else {
+      cat("Variable type not supported for summarization.\n")
+    }
+    
+    cat("\n")  # Add a newline for better readability
+  }
+}
+
+# Example usage with bank_data
+summarize_variables(bank_data)
+
+
+```
+```{r}
+#Q7
+# Selecting some categorical and numerical variables
+selected_columns <- c("age", "job", "marital", "education", "default", "housing", "loan", "duration", "campaign")
+
+# Create a new data frame with selected columns
+selected_data <- bank_data[selected_columns]
+
+# Convert categorical variables to factors if they are not already
+selected_data$job <- as.factor(selected_data$job)
+selected_data$marital <- as.factor(selected_data$marital)
+selected_data$education <- as.factor(selected_data$education)
+selected_data$default <- as.factor(selected_data$default)
+selected_data$housing <- as.factor(selected_data$housing)
+selected_data$loan <- as.factor(selected_data$loan)
+
+# Apply the function and show the output
+summarize_variables(selected_data)
+
+
+```

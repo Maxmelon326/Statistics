@@ -1,0 +1,229 @@
+```{r}
+#Q1 Define and print sting.
+
+# Define the string
+task_description <- "Name: LI WAN, Unit Name: SIT741, Task Name: T04.P1"
+
+# Print the string
+cat(task_description, "\n")
+
+
+```
+```{r}
+#Q2 Use rbinom() to generate 30 random data observations
+# Set the parameters
+set.seed(100)
+n <- 30    # Number of observations
+# Generate random data observations
+x <- rbinom(n, size=10, p=0.5)#size=Number of trials p=Probability of success
+
+# Display the random data
+x
+
+```
+```{r}
+#Q3 Plot its histogram along with the theoretical distribution.
+library(tidyverse)
+set.seed(100)
+dbinom_10_5 <- function(x) {dbinom(x,size = 10,prob = 0.5)}
+
+tibble(x = x) %>% 
+  ggplot(aes(x)) +
+  geom_histogram(aes(y = stat(density))) +
+  xlim(0, 10) +
+  stat_function(
+    fun = dbinom_10_5, 
+    color = 'red',
+    n = 11  # Evaluate only at whole numbers from 0 to 10
+  )
+```
+
+```{r}
+#Q4 Use mle2() to estimate the parameters of a normal distribution that matches your data.
+library(bbmle)
+set.seed(100)
+
+# Function to generate binomial data and estimate normal parameters
+estimate_normal_params <- function(trials, prob, n_samples) {
+  # Generate binomial data
+  data <- rbinom(n_samples, size = trials, prob = prob)
+  
+  # Define negative log-likelihood function
+  nll <- function(mean, sd) {
+    -sum(dnorm(data, mean = mean, sd = sd, log = TRUE))
+  }
+  
+  # Initial parameter estimates
+  initial_mean <- mean(data)
+  initial_sd <- sd(data)
+  
+  # Use mle2 to estimate parameters. About how to define initial parameters. We need to find mean and sd. We choose to statistically calculte samples' mean and sd from the fitting result. 
+  fit <- mle2(nll, start = list(mean = initial_mean, sd = initial_sd))
+  
+    # Extract estimates
+  estimates <- coef(fit)
+  
+  # Calculate theoretical values
+  theoretical_mean <- trials * prob
+  theoretical_sd <- sqrt(trials * prob * (1 - prob))
+  
+  # Return results
+  list(
+    estimates = estimates,
+    theoretical = c(mean = theoretical_mean, sd = theoretical_sd),
+    data = data
+  )
+}
+
+# For 10 trials
+result_10 <- estimate_normal_params(trials = 10, prob = 0.5, n_samples = 30)
+#result_10 <- estimate_normal_params(trials = 10, prob = 0.5, n_samples = 1000)
+
+# Print results for 10 trials
+print("Results for 10 trials:")
+print(result_10$estimates)
+print(result_10$theoretical)
+
+# For 100 trials
+result_100 <- estimate_normal_params(trials = 10, prob = 0.5, n_samples = 30)
+#result_100 <- estimate_normal_params(trials = 100, prob = 0.5, n_samples = 1000)
+
+# Print results for 100 trials
+print("Results for 100 trials:")
+print(result_100$estimates)
+print(result_100$theoretical)
+  
+```
+When n_samples = 30
+
+For 10 Trials:
+Estimated Mean: 4.93
+Estimated SD: 1.09
+Theoretical Mean: 5.00
+Theoretical SD: 1.58
+
+For 100 Trials:
+Estimated Mean: 5.13
+Estimated SD: 1.48
+Theoretical Mean: 5.00
+Theoretical SD: 1.58
+
+When n_samples = 1000
+For 10 Trials:
+
+Estimated Mean: 5.09
+Estimated SD: 1.63
+Theoretical Mean: 5.00
+Theoretical SD: 1.58
+For 100 Trials:
+
+Estimated Mean: 49.95
+Estimated SD: 5.09
+Theoretical Mean: 50.00
+Theoretical SD: 5.00
+
+Analysis
+For 30 Samples:
+Mean and SD for 10 Trials:
+The estimates for both the mean and SD are reasonably close to the theoretical values. However, there is some variability, which is expected with a smaller sample size (30). The SD is a bit lower than the theoretical value.
+Mean and SD for 100 Trials:
+As the number of trials increases, the estimates for mean and SD get closer to the theoretical values. This is because the larger number of trials provides a more accurate approximation of the distribution’s parameters.
+
+For 1000 Samples:
+Mean and SD for 10 Trials:
+The estimates are closer to the theoretical mean and SD compared to when n_samples = 30. The mean estimate is quite close to the theoretical value, while the SD is slightly higher, but still within a reasonable range.
+Mean and SD for 100 Trials:
+The estimates are very close to the theoretical values. This shows that with a larger sample size (1000), the estimates become more stable and accurate.
+
+As the number of samples increases, estimates of the parameters should theoretically become more accurate. However, in this senario, it is not obvious perhaps due to Sampling Variability, number of trials or Random fluctuations in the data etc. 
+
+```{r}
+#Q5 Read the “abalone” data
+abalone <- read.table("http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data", sep = ",")
+# Assign column names
+colnames(abalone) <- c("Sex", "Length", "Diam", "Height", "Whole", 
+                        "Shucked", "Viscera", "Shell", "Age")
+
+
+head(abalone)
+
+```
+
+```{r}
+#Q6 Use ggplot to produc emulti-grid barplot,violin plot, boxplot and scatterplot.
+#Multi-grid barplot
+library(tidyverse)
+
+abalone %>%
+  ggplot(aes(x = Age)) +
+  geom_bar() +
+  facet_grid(. ~ Sex) +
+  labs(x = "Age", y = "Count", 
+       title = "Distribution of Age by Sex") +
+  coord_flip()
+
+```
+
+The graph illustrates age distributions across three sex categories: Female (F), Infant (I), and Male (M). Both F and M categories show a peak around ages 10-11, with F having the highest overall count and a relatively even distribution beyond this peak. In contrast, the I category exhibits a unique pattern with peaks at very young ages (0-5) and around ages 7-9, and it has the lowest overall count. The F and M distributions are similar, while the I distribution is notably different in shape and count, highlighting distinct patterns in age distribution among the categories.
+
+```{r}
+#violin plot
+abalone %>% 
+  ggplot() +
+  geom_violin(mapping = aes(x = Sex, 
+                            y = Height)) 
+
+```
+
+The graph illustrates height distributions across three sex categories: The F and M distributions are similar, while the I distribution is notably different with lower height.
+
+
+```{r}
+#boxplot
+# Convert Age to a factor
+abalone$Age <- as.factor(abalone$Age)
+abalone %>% 
+  ggplot() +
+  geom_boxplot(mapping = aes(x = Age, 
+                             y = Length ))
+
+```
+
+The graph illustrates Length distributions in every age year: We can see under Age 13, the abalone has more lower length outliers.  
+
+
+```{r}
+#scatterplot
+# Convert Age to numeric
+abalone$Age <- as.numeric(abalone$Age)
+
+abalone %>%
+  filter(Sex == "M") %>% # Filter for males
+  ggplot(aes(x = Length, y = Age)) +
+  geom_point() + # Scatterplot
+  geom_smooth(method = "lm", color = "red") 
+
+```
+
+From the graph, we cannot see very clear liner regression relationship between Age and Length.
+
+
+```{r}
+#Q7 Build a linear model using lm()
+library(MASS)
+
+# Filter for males
+male_abalone <- abalone %>% filter(Sex == "M")
+
+# Fit the linear model
+(
+model_lm <- lm(Age ~ Length, 
+               data = male_abalone)
+)
+
+# Get the summary of the model
+model_summary <- summary(model_lm)
+model_summary
+
+```
+The positive p-value and significant t-value for Length suggest a clear positive linear relationship between Length and Age. However, the relatively low R-squared value indicates that while the relationship is statistically significant, the model does not explain a large proportion of the variability in Age, suggesting that other factors also contribute to the variation in Age.
